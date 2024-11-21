@@ -1,0 +1,124 @@
+CREATE TABLE CUSTOMERS (
+custumer_id int PRIMARY KEY,
+first_name char(100) NOT NULL,
+last_name char(100)NOT NULL, 
+phone int NOT NULL,
+email char(30) NOT NULL,
+street char(100) NOT NULL,
+city char(30) NOT NULL,
+state char(30) NOT NULL,
+zip_code int NOT NULL
+)
+
+CREATE TABLE ORDERS(
+order_id int PRIMARY KEY,
+customer_id int NOT NULL,
+order_status char(20) NOT NULL, 
+order_date date NOT NULL,
+required_date date NOT NULL,
+shipped_date date NOT NULL,
+store_id int NOT NULL,
+staff_if int NOT NULL
+)
+
+CREATE TABLE STAFFS (
+staff_id int PRIMARY KEY,
+first_name char(100) NOT NULL,
+last_name char(100)NOT NULL, 
+email char(30) NOT NULL,
+phone int NOT NULL,
+active char(100) NOT NULL,
+store_id int NOT NULL,
+manager_id int NOT NULL
+)
+
+CREATE TABLE STORES(
+store_id int PRIMARY KEY,
+store_name char(100) NOT NULL,
+phone int NOT NULL, 
+email char(30) NOT NULL,
+street char(100) NOT NULL,
+city char(30) NOT NULL,
+state char(30) NOT NULL,
+zip_code int NOT NULL
+)
+
+CREATE TABLE ORDER_ITEMS(
+order_id int PRIMARY KEY,
+item_id int NOT NULL,
+product_id int NOT NULL, 
+qunantity int NOT NULL,
+list_price char(100) NOT NULL,
+discount char(30) NOT NULL
+)
+
+CREATE TABLE CATEGORIES(
+category_id int PRIMARY KEY,
+category_name char(100) NOT NULL
+)
+
+CREATE TABLE PRODUCTS(
+product_id int PRIMARY KEY,
+product_name char(100) NOT NULL,
+brand_id int NOT NULL,
+category_id int NOT NULL,
+model_year int NOT NULL,
+list_price char(100) NOT NULL
+)
+
+CREATE TABLE STOCKS(
+store_id int PRIMARY KEY,
+product_id int NOT NULL,
+quantity int NOT NULL
+)
+
+CREATE TABLE BRANDS(
+brand_id int PRIMARY KEY,
+brand_name char(100) NOT NULL
+)
+
+
+- Listar todos Clientes que não tenham realizado uma compra;
+SELECT 
+a.first_name, 
+a.last_name
+FROM CUSTOMERS a 
+LEFT JOIN ORDERS b on a.custumer_id = b.custumer_id
+WHERE b.order_id IS NULL;
+
+- Listar os Produtos que não tenham sido comprados
+SELECT 
+a.product_id,
+a.product_name
+FROM PRODUCTS a
+LEFT JOIN ORDER_ITEMS b ON a.product_id = b.product_id
+WHERE b.order_id IS NULL;
+
+- Listar os Produtos sem Estoque;
+SELECT 
+a.product_id,
+a.product_name
+FROM STOCKS b ON a.product_id = b.product_id
+where b.quantity IS NULL or b.quantity = 0; 
+
+- Agrupar a quantidade de vendas que uma determinada Marca por Loja.
+SELECT 
+a.brand_name, 
+b.store_name,
+COUNT(c.order_id) AS  ttl_vendas
+FROM ORDER_ITEMS c 
+JOIN PRODUCTS d ON c.product_id = d.product_id
+JOIN BRANDS e ON c.brand_id = e.brand_id
+JOIN ORDERS f ON c.order_id = f.order_id 
+JOIN STORE g ON f.store_id = g.store_id
+GROUP BY a.brand_name, b.store_name
+ORDER BY a.brand_name, b.store_name;
+
+- Listar os Funcionarios que não estejam relacionados a um Pedido.
+SELECT 
+a.staff_id,
+a.first_name,
+a.last_name
+FROM STAFFS a 
+LEFT JOIN ORDERS b on a.staff_id = b.staff_id
+WHERE b.order_id IS NULL; 
